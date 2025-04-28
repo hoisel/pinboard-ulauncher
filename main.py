@@ -259,10 +259,19 @@ class KeywordQueryEventListener(EventListener):
                     on_enter=HideWindowAction()
                 ))
             
+            # Add a back to menu item at the start
+            items.insert(0, ExtensionResultItem(
+                icon='images/icon.png',
+                name='← Back to Menu',
+                description='Return to the main menu',
+                on_enter=SetUserQueryAction(extension.preferences['pinboard_kw'])
+            ))
+
             return RenderResultListAction(items)
             
         # Check if we're in the Recent Bookmarks view
         if extension.current_view == 'recent':
+
             # Browse only recent bookmarks
             recent_bookmarks = extension.get_recent_bookmarks()
             
@@ -299,6 +308,13 @@ class KeywordQueryEventListener(EventListener):
                         on_enter=HideWindowAction()
                     ))
             
+            # Add a back to menu item at the start
+            items.insert(0, ExtensionResultItem(
+                icon='images/icon.png',
+                name='← Back to Menu',
+                description='Return to the main menu',
+                on_enter=SetUserQueryAction(extension.preferences['pinboard_kw'])
+            ))
             return RenderResultListAction(items)
         
         # Default: Search bookmarks (normal search mode)
@@ -358,6 +374,14 @@ class ItemEnterEventListener(EventListener):
         action = data.get('action')
         items = []
 
+        # Add a back to menu item at the end
+        items.append(ExtensionResultItem(
+            icon='images/icon.png',
+            name='← Back to Menu',
+            description='Return to the main menu',
+            on_enter=SetUserQueryAction(extension.preferences['pinboard_kw'])
+        ))
+
         if action == 'search_bookmarks':
             # Set user query to empty to start search
             extension.current_view = 'search'
@@ -374,7 +398,7 @@ class ItemEnterEventListener(EventListener):
             
             # Get recent bookmarks
             recent_bookmarks = extension.get_recent_bookmarks()
-            
+
             if not recent_bookmarks and extension.error_message:
                 # Show error
                 return RenderResultListAction([
@@ -402,14 +426,7 @@ class ItemEnterEventListener(EventListener):
                     description='Try again later or add some bookmarks',
                     on_enter=HideWindowAction()
                 ))
-            
-            # Add a back to menu item at the end
-            items.append(ExtensionResultItem(
-                icon='images/icon.png',
-                name='← Back to Menu',
-                description='Return to the main menu',
-                on_enter=SetUserQueryAction(extension.preferences['pinboard_kw'])
-            ))
+                  
             
             return RenderResultListAction(items)
         
