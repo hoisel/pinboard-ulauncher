@@ -1,0 +1,26 @@
+{
+  "required_api_version": "2",
+  "name": "Pinboard",
+  "description": "Manage and search your Pinboard.in bookmarks",
+  "developer_name": "Claude",
+  "icon": "images/icon.png",
+  "options": {
+    "query_debounce": 0.5
+  },
+  "preferences": [
+    {
+      "id": "pinboard_kw",
+      "type": "keyword",
+      "name": "Pinboard",
+      "description": "Search and manage your Pinboard bookmarks",
+      "default_value": "pb"
+    },
+    {
+      "id": "pinboard_token",
+      "type": "input",
+      "name": "Pinboard Token",
+      "description": "Your Pinboard API token (username:token)",
+      "default_value": ""
+    }
+  ]
+} 

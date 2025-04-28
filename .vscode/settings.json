@@ -1,0 +1,30 @@
+{
+    "DockerRun.DisableAutoGenerateConfig": true,
+    "cSpell.language": "en,pt,pt_BR",
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+      "**/.hg": true,
+      "**/CVS": true,
+      "**/.DS_Store": true,
+      "**/Thumbs.db": true
+    },
+  
+    // Custom theme
+    "editor.fontFamily": "'Source Code Pro','Cartograph CF', 'Menlo', 'Droid Sans Mono', 'monospace', monospace",
+    "editor.fontLigatures": true,
+    "editor.fontSize": 12,
+    "editor.fontWeight": "500",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": "always"
+    },
+  
+    "workbench.editor.enablePreview": true,
+    "typescript.referencesCodeLens.enabled": false,
+    "cSpell.words": [
+        "pinboard",
+        "Pinboard",
+        "ulauncher"
+    ],
+}
