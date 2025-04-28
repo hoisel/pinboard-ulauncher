@@ -25,6 +25,7 @@ class PinboardExtension(Extension):
         self.cache = {}
         self.last_cache_time = None
         self.error_message = None
+        self.current_view = None  # Pode ser 'main', 'tags', 'recent', ou 'search'
 
     def get_token(self):
         return self.preferences.get('pinboard_token', '')
@@ -162,6 +163,8 @@ class KeywordQueryEventListener(EventListener):
 
         # Main menu (if no further input)
         if not query:
+            extension.current_view = 'main'
+            
             # Search bookmarks item
             search_description = "Search all bookmarks"
             if extension.selected_tags:
@@ -211,6 +214,7 @@ class KeywordQueryEventListener(EventListener):
         
         # Handle tag browsing with # prefix
         if query.startswith("#"):
+            extension.current_view = 'tags'
             tags = extension.get_tags()
             
             # Filter tags by query
@@ -256,8 +260,49 @@ class KeywordQueryEventListener(EventListener):
                 ))
             
             return RenderResultListAction(items)
+            
+        # Check if we're in the Recent Bookmarks view
+        if extension.current_view == 'recent':
+            # Browse only recent bookmarks
+            recent_bookmarks = extension.get_recent_bookmarks()
+            
+            # Filter recent bookmarks by query
+            filtered_bookmarks = [b for b in recent_bookmarks if 
+                        query.lower() in b.get('description', '').lower() or
+                        query.lower() in b.get('extended', '').lower() or
+                        query.lower() in b.get('href', '').lower()]
+            
+            # Create result items
+            for bookmark in filtered_bookmarks:
+                items.append(ExtensionResultItem(
+                    icon='images/icon.png',
+                    name=bookmark.get('description', 'No title'),
+                    description=bookmark.get('href', 'No URL'),
+                    on_enter=OpenUrlAction(bookmark.get('href', ''))
+                ))
+            
+            if not items:
+                # Check if there was an error
+                if extension.error_message:
+                    error_item = ExtensionResultItem(
+                        icon='images/icon.png',
+                        name='Error loading recent bookmarks',
+                        description=f'Error: {extension.error_message}',
+                        on_enter=HideWindowAction()
+                    )
+                    return RenderResultListAction([error_item])
+                else:
+                    items.append(ExtensionResultItem(
+                        icon='images/icon.png',
+                        name='No matching recent bookmarks found',
+                        description='Try a different search term',
+                        on_enter=HideWindowAction()
+                    ))
+            
+            return RenderResultListAction(items)
         
-        # Search bookmarks
+        # Default: Search bookmarks (normal search mode)
+        extension.current_view = 'search'
         bookmarks = []
         
         if extension.selected_tags:
@@ -315,15 +360,19 @@ class ItemEnterEventListener(EventListener):
 
         if action == 'search_bookmarks':
             # Set user query to empty to start search
+            extension.current_view = 'search'
             return SetUserQueryAction(extension.preferences['pinboard_kw'])
         
         elif action == 'browse_tags':
-
             # Show tag browser
+            extension.current_view = 'tags'
             return SetUserQueryAction(f"{extension.preferences['pinboard_kw']} #")
         
         elif action == 'browse_recent':
-            # Show recent bookmarks
+            # Show recent bookmarks view
+            extension.current_view = 'recent'
+            
+            # Get recent bookmarks
             recent_bookmarks = extension.get_recent_bookmarks()
             
             if not recent_bookmarks and extension.error_message:
@@ -331,12 +380,13 @@ class ItemEnterEventListener(EventListener):
                 return RenderResultListAction([
                     ExtensionResultItem(
                         icon='images/icon.png',
-                        name='Error loading bookmarks',
+                        name='Error loading recent bookmarks',
                         description=f'Error: {extension.error_message}',
                         on_enter=HideWindowAction()
                     )
                 ])
             
+            # Create result items for recent bookmarks
             for bookmark in recent_bookmarks:
                 items.append(ExtensionResultItem(
                     icon='images/icon.png',
@@ -352,6 +402,14 @@ class ItemEnterEventListener(EventListener):
                     description='Try again later or add some bookmarks',
                     on_enter=HideWindowAction()
                 ))
+            
+            # Add a back to menu item at the end
+            items.append(ExtensionResultItem(
+                icon='images/icon.png',
+                name='← Back to Menu',
+                description='Return to the main menu',
+                on_enter=SetUserQueryAction(extension.preferences['pinboard_kw'])
+            ))
             
             return RenderResultListAction(items)
         
@@ -409,6 +467,26 @@ class ItemEnterEventListener(EventListener):
                     name=f"... and {count_total - max_display} more tags",
                     description="Type to filter results",
                     on_enter=HideWindowAction()
+                ))
+            
+            # Add a back to menu item
+            tag_items.append(ExtensionResultItem(
+                icon='images/icon.png',
+                name='← Back to Menu',
+                description='Return to the main menu',
+                on_enter=SetUserQueryAction(extension.preferences['pinboard_kw'])
+            ))
+            
+            # Add a search with tags item if tags are selected
+            if extension.selected_tags:
+                tag_items.append(ExtensionResultItem(
+                    icon='images/icon.png',
+                    name='Search with Selected Tags',
+                    description=f"Search bookmarks with tags: {', '.join(extension.selected_tags)}",
+                    on_enter=ExtensionCustomAction({
+                        'action': 'search_bookmarks',
+                        'tags': extension.selected_tags
+                    }, keep_app_open=True)
                 ))
             
             return RenderResultListAction(tag_items)
