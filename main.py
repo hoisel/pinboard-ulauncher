@@ -554,8 +554,8 @@ class ItemEnterEventListener(EventListener):
             
             # Add a search with tags item if tags are selected
             if extension.selected_tags:
-                tag_items.append(ExtensionResultItem(
-                    icon='images/pinboard.png',
+                tag_items.insert(1, ExtensionResultItem(
+                    icon='images/search.png',
                     name='Search with Selected Tags',
                     description=f"Search bookmarks with tags: {', '.join(extension.selected_tags)}",
                     on_enter=ExtensionCustomAction({
