@@ -26,6 +26,7 @@ class PinboardExtension(Extension):
         self.last_cache_time = None
         self.error_message = None
         self.current_view = None  # Pode ser 'main', 'tags', 'recent', ou 'search'
+        self.current_tag_filter = ""  # Armazenar o filtro de tags atual
 
     def get_token(self):
         return self.preferences.get('pinboard_token', '')
@@ -219,6 +220,7 @@ class KeywordQueryEventListener(EventListener):
             
             # Filter tags by query
             tag_query = query[1:].lower().strip()
+            extension.current_tag_filter = tag_query  # Salvar o filtro atual
             filtered_tags = tags
             
             if tag_query:
@@ -494,7 +496,7 @@ class ItemEnterEventListener(EventListener):
                 ExtensionResultItem(
                     icon='images/info.png',
                     name='Browsing Tags',
-                    description='Currently viewing all tags',
+                    description=f"{'Currently viewing all tags' if not extension.current_tag_filter else f'Filtering tags: {extension.current_tag_filter}'}",
                     on_enter=HideWindowAction()
                 ),
                 ExtensionResultItem(
@@ -521,7 +523,13 @@ class ItemEnterEventListener(EventListener):
             max_display = 50
             count_total = len(tags)
             
-            for tag_item in tags[:max_display]:
+            # Aplicar o filtro se existir
+            filtered_tags = tags
+            if extension.current_tag_filter:
+                filtered_tags = [tag for tag in tags if extension.current_tag_filter.lower() in tag['name'].lower()]
+                count_total = len(filtered_tags)
+            
+            for tag_item in filtered_tags[:max_display]:
                 is_selected = tag_item['name'] in extension.selected_tags
                 action_data = {
                     'action': 'toggle_tag',
