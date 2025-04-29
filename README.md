@@ -5,9 +5,13 @@ A Ulauncher extension to interact with your [Pinboard.in](https://pinboard.in) b
 ## Features
 
 - Search your Pinboard bookmarks
-- Browse and filter by tags
+- Browse and filter by tags (with multi-tag selection)
 - View recent bookmarks
 - Add new bookmarks (placeholder functionality)
+- Sort bookmarks by date or title
+- Sort tags by count or alphabetically
+- Configurable cache duration to reduce API calls
+- Customizable number of results
 
 ## Requirements
 
@@ -20,7 +24,7 @@ A Ulauncher extension to interact with your [Pinboard.in](https://pinboard.in) b
 1. Open Ulauncher preferences
 2. Go to "Extensions" tab
 3. Click "Add extension"
-4. Paste this repository URL: `https://github.com/your-username/pinboard-ulauncher`
+4. Paste this repository URL: `https://github.com/hoisel/pinboard-ulauncher`
 
 ## Usage
 
@@ -35,9 +39,24 @@ A Ulauncher extension to interact with your [Pinboard.in](https://pinboard.in) b
 
 ## Commands
 
-- `pb` - Show main menu
+- `pb` - Show main menu with options to:
+  - Search bookmarks
+  - Browse tags
+  - Browse recent bookmarks
+  - Add new bookmark
 - `pb [query]` - Search bookmarks containing query
 - `pb #[tag]` - Browse and select tags
+  - Click on tags to toggle selection
+  - Selected tags will be used to filter bookmarks in search
+
+## Configuration Options
+
+- **Pinboard Token**: Your Pinboard API token
+- **Maximum Results**: Number of results to display (5-200)
+- **Cache Duration**: How long to cache data from Pinboard (1 min - 1 hour)
+- **Sort Bookmarks**: Sort by most recent or alphabetically by title
+- **Sort Tags**: Sort by count (most used first) or alphabetically
+- **Recent Bookmarks Count**: Number of recent bookmarks to display (5-100)
 
 ## License
 
