@@ -14,6 +14,8 @@ from ulauncher.api.shared.action.HideWindowAction import HideWindowAction
 from ulauncher.api.shared.action.ExtensionCustomAction import ExtensionCustomAction
 from ulauncher.api.shared.action.SetUserQueryAction import SetUserQueryAction
 from ulauncher.api.shared.action.OpenUrlAction import OpenUrlAction
+from ulauncher.api.shared.action.DoNothingAction import DoNothingAction
+from ulauncher.api.shared.action.CopyToClipboardAction import CopyToClipboardAction
 
 
 class PinboardExtension(Extension):
@@ -27,6 +29,7 @@ class PinboardExtension(Extension):
         self.error_message = None
         self.current_view = None  # Pode ser 'main', 'tags', 'recent', ou 'search'
         self.current_tag_filter = ""  # Armazenar o filtro de tags atual
+        self.reset_query_requested = False  # Nova flag para indicar que queremos resetar a query
 
     def get_token(self):
         return self.preferences.get('pinboard_token', '')
@@ -218,6 +221,11 @@ class KeywordQueryEventListener(EventListener):
             extension.current_view = 'tags'
             tags = extension.get_tags()
             
+            # Se há uma solicitação para resetar a query, faça isso e resete a flag
+            if extension.reset_query_requested and query != "#":
+                extension.reset_query_requested = False
+                return SetUserQueryAction(f"{extension.preferences['pinboard_kw']} #")
+            
             # Filter tags by query
             tag_query = query[1:].lower().strip()
             extension.current_tag_filter = tag_query  # Salvar o filtro atual
@@ -226,20 +234,73 @@ class KeywordQueryEventListener(EventListener):
             if tag_query:
                 filtered_tags = [tag for tag in tags if tag_query in tag['name'].lower()]
             
-            # Limit the number of results
-            max_display = 50
-            count_total = len(filtered_tags)
+            # Adicionar o item representativo da view atual como primeiro item
+            items.insert(0, ExtensionResultItem(
+                icon='images/info.png',
+                name='Browsing Tags',
+                description=f"{'Currently viewing all tags' if not tag_query else f'Filtering tags: {tag_query}'}",
+                on_enter=HideWindowAction()
+            ))
             
-            for tag in filtered_tags[:max_display]:
-                is_selected = tag['name'] in extension.selected_tags
+            # Add a back to menu item 
+            items.insert(1, ExtensionResultItem(
+                icon='images/back.png',
+                name='Back to Menu',
+                description='Return to the main menu',
+                on_enter=SetUserQueryAction(extension.preferences['pinboard_kw'])
+            ))
+            
+            # Separar tags selecionadas e não selecionadas
+            selected_tags = []
+            unselected_tags = []
+            
+            for tag in filtered_tags:
+                if tag['name'] in extension.selected_tags:
+                    selected_tags.append(tag)
+                else:
+                    unselected_tags.append(tag)
+            
+            # Add a search with tags item if tags are selected
+            if extension.selected_tags:
+                items.insert(1, ExtensionResultItem(
+                    icon='images/search.png',
+                    name='Search with Selected Tags',
+                    description=f"Search bookmarks with tags: {', '.join(extension.selected_tags)}",
+                    on_enter=ExtensionCustomAction({
+                        'action': 'search_bookmarks',
+                        'tags': extension.selected_tags
+                    }, keep_app_open=True)
+                ))
+            
+            # Exibir tags selecionadas primeiro
+            for tag in selected_tags:
                 action_data = {
                     'action': 'toggle_tag',
                     'tag': tag['name'],
-                    'is_selected': is_selected
+                    'is_selected': True
                 }
                 
                 items.append(ExtensionResultItem(
-                    icon='images/tag_selected.png' if is_selected else 'images/tag.png',
+                    icon='images/tag_selected.png',
+                    name=f"{tag['name']}",
+                    description=f"{tag['count']} bookmarks",
+                    on_enter=ExtensionCustomAction(action_data, keep_app_open=True)
+                ))
+            
+            # Depois exibir tags não selecionadas
+            # Limit the number of results
+            max_display = 50 - len(selected_tags)  # Ajustar limite considerando tags selecionadas
+            count_total = len(unselected_tags)
+            
+            for tag in unselected_tags[:max_display]:
+                action_data = {
+                    'action': 'toggle_tag',
+                    'tag': tag['name'],
+                    'is_selected': False
+                }
+                
+                items.append(ExtensionResultItem(
+                    icon='images/tag.png',
                     name=f"{tag['name']}",
                     description=f"{tag['count']} bookmarks",
                     on_enter=ExtensionCustomAction(action_data, keep_app_open=True)
@@ -261,22 +322,6 @@ class KeywordQueryEventListener(EventListener):
                     on_enter=HideWindowAction()
                 ))
             
-                 # Adicionar o item representativo da view atual como primeiro item
-            items.insert(0, ExtensionResultItem(
-                icon='images/info.png',
-                name='Browsing Tags',
-                description=f"{'Currently viewing all tags' if not tag_query else f'Filtering tags: {tag_query}'}",
-                on_enter=HideWindowAction()
-            ))
-            
-            # Add a back to menu item 
-            items.insert(1, ExtensionResultItem(
-                icon='images/back.png',
-                name='Back to Menu',
-                description='Return to the main menu',
-                on_enter=SetUserQueryAction(extension.preferences['pinboard_kw'])
-            ))
-
             return RenderResultListAction(items)
             
         # Check if we're in the Recent Bookmarks view
@@ -488,7 +533,10 @@ class ItemEnterEventListener(EventListener):
                 if tag not in extension.selected_tags:
                     extension.selected_tags.append(tag)
             
-            # Render the tag browser again instead of redirecting to a new query
+            # Limpar o filtro de tags após selecionar uma tag
+            extension.current_tag_filter = ""
+            
+            # Render the tag browser again
             tags = extension.get_tags()
             
             # Adicionar o item representativo da view atual como primeiro item
@@ -497,7 +545,7 @@ class ItemEnterEventListener(EventListener):
                     icon='images/info.png',
                     name='Browsing Tags',
                     description=f"{'Currently viewing all tags' if not extension.current_tag_filter else f'Filtering tags: {extension.current_tag_filter}'}",
-                    on_enter=HideWindowAction()
+                    on_enter=SetUserQueryAction(f"{extension.preferences['pinboard_kw']} #")
                 ),
                 ExtensionResultItem(
                     icon='images/back.png',
@@ -506,51 +554,6 @@ class ItemEnterEventListener(EventListener):
                     on_enter=SetUserQueryAction(extension.preferences['pinboard_kw'])
                 )
             ]
-            
-            if not tags:
-                # No tags found or error occurred
-                error_msg = extension.error_message or "Unknown error"
-                tag_items.append(ExtensionResultItem(
-                    icon='images/tag.png',
-                    name='No tags found',
-                    description=f'Error: {error_msg}. Try again later or check your token.',
-                    on_enter=HideWindowAction()
-                ))
-                return RenderResultListAction(tag_items)
-            
-            # Show all tags
-            # Limit the number of results
-            max_display = 50
-            count_total = len(tags)
-            
-            # Aplicar o filtro se existir
-            filtered_tags = tags
-            if extension.current_tag_filter:
-                filtered_tags = [tag for tag in tags if extension.current_tag_filter.lower() in tag['name'].lower()]
-                count_total = len(filtered_tags)
-            
-            for tag_item in filtered_tags[:max_display]:
-                is_selected = tag_item['name'] in extension.selected_tags
-                action_data = {
-                    'action': 'toggle_tag',
-                    'tag': tag_item['name'],
-                    'is_selected': is_selected
-                }
-                
-                tag_items.append(ExtensionResultItem(
-                    icon='images/tag_selected.png' if is_selected else 'images/tag.png',
-                    name=f"{tag_item['name']}",
-                    description=f"{tag_item['count']} bookmarks",
-                    on_enter=ExtensionCustomAction(action_data, keep_app_open=True)
-                ))
-            
-            if count_total > max_display:
-                tag_items.append(ExtensionResultItem(
-                    icon='images/tag.png',
-                    name=f"... and {count_total - max_display} more tags",
-                    description="Type to filter results",
-                    on_enter=HideWindowAction()
-                ))
             
             # Add a search with tags item if tags are selected
             if extension.selected_tags:
@@ -564,6 +567,69 @@ class ItemEnterEventListener(EventListener):
                     }, keep_app_open=True)
                 ))
             
+            if not tags:
+                # No tags found or error occurred
+                error_msg = extension.error_message or "Unknown error"
+                tag_items.append(ExtensionResultItem(
+                    icon='images/tag.png',
+                    name='No tags found',
+                    description=f'Error: {error_msg}. Try again later or check your token.',
+                    on_enter=HideWindowAction()
+                ))
+                return RenderResultListAction(tag_items)
+            
+            # Separar tags selecionadas e não selecionadas
+            selected_tags = []
+            unselected_tags = []
+            
+            for tag_item in tags:
+                if tag_item['name'] in extension.selected_tags:
+                    selected_tags.append(tag_item)
+                else:
+                    unselected_tags.append(tag_item)
+            
+            # Exibir tags selecionadas primeiro
+            for tag_item in selected_tags:
+                action_data = {
+                    'action': 'toggle_tag',
+                    'tag': tag_item['name'],
+                    'is_selected': True
+                }
+                
+                tag_items.append(ExtensionResultItem(
+                    icon='images/tag_selected.png',
+                    name=f"{tag_item['name']}",
+                    description=f"{tag_item['count']} bookmarks",
+                    on_enter=ExtensionCustomAction(action_data, keep_app_open=True)
+                ))
+            
+            # Depois exibir tags não selecionadas
+            max_display = 50 - len(selected_tags)  # Ajustar limite considerando tags selecionadas
+            count_total = len(unselected_tags)
+            
+            for tag_item in unselected_tags[:max_display]:
+                action_data = {
+                    'action': 'toggle_tag',
+                    'tag': tag_item['name'],
+                    'is_selected': False
+                }
+                
+                tag_items.append(ExtensionResultItem(
+                    icon='images/tag.png',
+                    name=f"{tag_item['name']}",
+                    description=f"{tag_item['count']} bookmarks",
+                    on_enter=ExtensionCustomAction(action_data, keep_app_open=True)
+                ))
+            
+            if count_total > max_display:
+                tag_items.append(ExtensionResultItem(
+                    icon='images/tag.png',
+                    name=f"... and {count_total - max_display} more tags",
+                    description="Type to filter results",
+                    on_enter=HideWindowAction()
+                ))
+            
+            # O primeiro item (ícone de info) já tem a ação SetUserQueryAction para resetar a query para #
             return RenderResultListAction(tag_items)
         
         elif action == 'add_bookmark':
