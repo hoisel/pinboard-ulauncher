@@ -246,16 +246,9 @@ class KeywordQueryEventListener(EventListener):
             if tag_query:
                 filtered_tags = [tag for tag in tags if tag_query in tag['name'].lower()]
             
-            # Adicionar o item representativo da view atual como primeiro item
-            items.insert(0, ExtensionResultItem(
-                icon='images/info.png',
-                name='Browsing Tags',
-                description=f"{'Currently viewing all tags' if not tag_query else f'Filtering tags: {tag_query}'}",
-                on_enter=HideWindowAction()
-            ))
             
             # Add a back to menu item 
-            items.insert(1, ExtensionResultItem(
+            items.insert(0, ExtensionResultItem(
                 icon='images/back.png',
                 name='Back to Menu',
                 description='Return to the main menu',
@@ -274,18 +267,9 @@ class KeywordQueryEventListener(EventListener):
             
             # Add a search with tags item if tags are selected
             if extension.selected_tags:
-                items.insert(1, ExtensionResultItem(
-                    icon='images/search.png',
-                    name='Search with Selected Tags',
-                    description=f"Search bookmarks with tags: {', '.join(extension.selected_tags)}",
-                    on_enter=ExtensionCustomAction({
-                        'action': 'search_bookmarks',
-                        'tags': extension.selected_tags
-                    }, keep_app_open=True)
-                ))
                 
                 # Adicionar opção para limpar todas as tags selecionadas
-                items.insert(2, ExtensionResultItem(
+                items.insert(1, ExtensionResultItem(
                     icon='images/clear.png',
                     name='Clear All Selected Tags',
                     description=f"Currently selected: {', '.join(extension.selected_tags)}",
@@ -563,34 +547,20 @@ class ItemEnterEventListener(EventListener):
             
             # Adicionar o item representativo da view atual como primeiro item
             tag_items = [
-                ExtensionResultItem(
-                    icon='images/info.png',
-                    name='Browsing Tags',
-                    description=f"{'Currently viewing all tags' if not extension.current_tag_filter else f'Filtering tags: {extension.current_tag_filter}'}",
-                    on_enter=SetUserQueryAction(f"{extension.preferences['pinboard_kw']} #")
-                ),
+
                 ExtensionResultItem(
                     icon='images/back.png',
                     name='Back to Menu',
-                    description='Return to the main menu',
+                    description=(f"Return to search bookmarks with tags: {', '.join(extension.selected_tags)}" if extension.selected_tags else ""),
                     on_enter=SetUserQueryAction(extension.preferences['pinboard_kw'])
                 )
             ]
             
             # Add a search with tags item if tags are selected
             if extension.selected_tags:
-                tag_items.insert(1, ExtensionResultItem(
-                    icon='images/search.png',
-                    name='Search with Selected Tags',
-                    description=f"Search bookmarks with tags: {', '.join(extension.selected_tags)}",
-                    on_enter=ExtensionCustomAction({
-                        'action': 'search_bookmarks',
-                        'tags': extension.selected_tags
-                    }, keep_app_open=True)
-                ))
                 
                 # Adicionar opção para limpar todas as tags selecionadas
-                tag_items.insert(2, ExtensionResultItem(
+                tag_items.insert(1, ExtensionResultItem(
                     icon='images/clear.png',
                     name='Clear All Selected Tags',
                     description=f"Currently selected: {', '.join(extension.selected_tags)}",
