@@ -547,7 +547,6 @@ class ItemEnterEventListener(EventListener):
             
             # Adicionar o item representativo da view atual como primeiro item
             tag_items = [
-
                 ExtensionResultItem(
                     icon='images/back.png',
                     name='Back to Menu',
@@ -638,8 +637,54 @@ class ItemEnterEventListener(EventListener):
             # Limpar todas as tags selecionadas
             extension.selected_tags = []
             
-            # Retornar ao menu principal
-            return SetUserQueryAction(extension.preferences['pinboard_kw'])
+            # Limpar o filtro atual
+            extension.current_tag_filter = ""
+            
+            # Se estamos na view de tags, renderizar diretamente todas as tags
+            if extension.current_view == 'tags':
+                tags = extension.get_tags()
+                
+                # Adicionar o item principal e botão de voltar
+                tag_items = [
+                    ExtensionResultItem(
+                        icon='images/back.png',
+                        name='Back to Menu',
+                        description='Return to the main menu',
+                        on_enter=SetUserQueryAction(extension.preferences['pinboard_kw'])
+                    )
+                ]
+                
+                # Exibir todas as tags
+                max_display = 50
+                count_total = len(tags)
+                
+                for tag_item in tags[:max_display]:
+                    action_data = {
+                        'action': 'toggle_tag',
+                        'tag': tag_item['name'],
+                        'is_selected': False
+                    }
+                    
+                    tag_items.append(ExtensionResultItem(
+                        icon='images/tag.png',
+                        name=f"{tag_item['name']}",
+                        description=f"{tag_item['count']} bookmarks (Click to select)",
+                        on_enter=ExtensionCustomAction(action_data, keep_app_open=True)
+                    ))
+                
+                if count_total > max_display:
+                    tag_items.append(ExtensionResultItem(
+                        icon='images/tag.png',
+                        name=f"... and {count_total - max_display} more tags",
+                        description="Type to filter results",
+                        on_enter=HideWindowAction()
+                    ))
+                
+                return RenderResultListAction(tag_items)
+            else:
+                # Caso esteja na view principal, redirecionar para a view principal
+                # diretamente em vez de mostrar uma tela de confirmação
+                return SetUserQueryAction(extension.preferences['pinboard_kw'])
         
         elif action == 'add_bookmark':
             # This would normally connect to the active browser to get URL
