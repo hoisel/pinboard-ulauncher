@@ -27,7 +27,7 @@
       "type": "select",
       "name": "Maximum Results",
       "description": "Maximum number of results to display",
-      "default_value": "50",
+      "default_value": "10",
       "options": [
         {"value": "5", "text": "5"},
         {"value": "10", "text": "10"},
@@ -74,6 +74,19 @@
         {"value": "alpha", "text": "Alphabetically (A-Z)"}
       ]
     },
+    {
+      "id": "recent_count",
+      "type": "select",
+      "name": "Recent Bookmarks Count",
+      "description": "Number of recent bookmarks to fetch",
+      "default_value": "10",
+      "options": [
+        {"value": "5", "text": "5"},
+        {"value": "10", "text": "10"},
+        {"value": "20", "text": "20"},
+        {"value": "50", "text": "50"},
+        {"value": "100", "text": "100"}
+      ]
     }
   ]
 } 

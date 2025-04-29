@@ -77,13 +77,19 @@ class PinboardExtension(Extension):
             self.error_message = str(e)
             return []
 
-    def get_recent_bookmarks(self, count=20):
+    def get_recent_bookmarks(self, count=None):
         """Get recent bookmarks from Pinboard API"""
         if not self.get_token():
             return []
+        
+        # Use the count parameter if provided, otherwise get from preferences
+        if count is None:
+            count = int(self.preferences.get('recent_count', '20'))
+            
+        self.logger.info(f"Fetching {count} recent bookmarks")
             
         # Use cache if available and not expired
-        cache_key = 'recent_bookmarks'
+        cache_key = f'recent_bookmarks_{count}'
         current_time = datetime.now()
         cache_time_minutes = int(self.preferences.get('cache_time', '5'))
         cache_time_seconds = cache_time_minutes * 60
@@ -386,7 +392,9 @@ class KeywordQueryEventListener(EventListener):
         if extension.current_view == 'recent':
 
             # Browse only recent bookmarks
-            recent_bookmarks = extension.get_recent_bookmarks()
+            recent_count = int(extension.preferences.get('recent_count', '20'))
+            extension.logger.info(f"Displaying {recent_count} recent bookmarks")
+            recent_bookmarks = extension.get_recent_bookmarks(recent_count)
             
             # Filter recent bookmarks by query
             filtered_bookmarks = [b for b in recent_bookmarks if 
@@ -411,6 +419,17 @@ class KeywordQueryEventListener(EventListener):
                     description=bookmark.get('href', 'No URL'),
                     on_enter=OpenUrlAction(bookmark.get('href', ''))
                 ))
+                
+                # Limit number of results
+                max_results = int(extension.preferences.get('max_results', '50'))
+                if len(items) - 2 >= max_results:  # -2 para considerar os itens de cabeçalho
+                    items.append(ExtensionResultItem(
+                        icon='images/info.png',
+                        name=f'...and more results',
+                        description=f'Your search returned more than {max_results} results',
+                        on_enter=HideWindowAction()
+                    ))
+                    break
             
             if len(items) <= 2:  # Apenas os itens de view e back
                 # Check if there was an error
@@ -515,6 +534,7 @@ class KeywordQueryEventListener(EventListener):
                     icon='images/info.png',
                     name=f'...and more results',
                     description=f'Your search returned more than {max_results} results',
+                    on_enter=HideWindowAction()
                 ))
                 break
         
@@ -576,7 +596,9 @@ class ItemEnterEventListener(EventListener):
             ))
             
             # Get recent bookmarks
-            recent_bookmarks = extension.get_recent_bookmarks()
+            recent_count = int(extension.preferences.get('recent_count', '20'))
+            extension.logger.info(f"Displaying {recent_count} recent bookmarks")
+            recent_bookmarks = extension.get_recent_bookmarks(recent_count)
 
             if not recent_bookmarks and extension.error_message:
                 # Show error
@@ -605,6 +627,17 @@ class ItemEnterEventListener(EventListener):
                     description=bookmark.get('href', 'No URL'),
                     on_enter=OpenUrlAction(bookmark.get('href', ''))
                 ))
+                
+                # Limit number of results
+                max_results = int(extension.preferences.get('max_results', '50'))
+                if len(items) - 2 >= max_results:  # -2 para considerar os itens de cabeçalho
+                    items.append(ExtensionResultItem(
+                        icon='images/info.png',
+                        name=f'...and more results',
+                        description=f'Your search returned more than {max_results} results',
+                        on_enter=HideWindowAction()
+                    ))
+                    break
             
             if len(items) <= 2:  # Apenas os itens de view e back
                 items.append(ExtensionResultItem(
