@@ -133,7 +133,16 @@ class PinboardExtension(Extension):
             with urllib.request.urlopen(url, timeout=10) as response:
                 tags_data = json.loads(response.read())
                 tags = [{'name': tag, 'count': count} for tag, count in tags_data.items()]
-                tags.sort(key=lambda x: x['count'], reverse=True)
+                
+                # Sort tags based on user preference
+                sort_preference = self.preferences.get('sort_tags', 'count')
+                self.logger.info(f"Sorting tags by: {sort_preference}")
+                
+                if sort_preference == 'alpha':
+                    tags.sort(key=lambda x: x['name'].lower())
+                else:  # default: sort by count
+                    tags.sort(key=lambda x: x['count'], reverse=True)
+                
                 self.cache[cache_key] = tags
                 self.last_cache_time = current_time
                 self.error_message = None
@@ -269,6 +278,14 @@ class KeywordQueryEventListener(EventListener):
             if tag_query:
                 filtered_tags = [tag for tag in tags if tag_query in tag['name'].lower()]
             
+            # Sort filtered tags based on user preference
+            sort_preference = extension.preferences.get('sort_tags', 'count')
+            extension.logger.info(f"Sorting filtered tags by: {sort_preference}")
+            
+            if sort_preference == 'alpha':
+                filtered_tags.sort(key=lambda x: x['name'].lower())
+            else:  # default: sort by count
+                filtered_tags.sort(key=lambda x: x['count'], reverse=True)
             
             # Add a back to menu item 
             items.insert(0, ExtensionResultItem(
@@ -287,6 +304,17 @@ class KeywordQueryEventListener(EventListener):
                     selected_tags.append(tag)
                 else:
                     unselected_tags.append(tag)
+            
+            # Sort selected and unselected tags based on user preference
+            sort_preference = extension.preferences.get('sort_tags', 'count')
+            extension.logger.info(f"Sorting selected and unselected tags by: {sort_preference}")
+            
+            if sort_preference == 'alpha':
+                selected_tags.sort(key=lambda x: x['name'].lower())
+                unselected_tags.sort(key=lambda x: x['name'].lower())
+            else:  # default: sort by count
+                selected_tags.sort(key=lambda x: x['count'], reverse=True)
+                unselected_tags.sort(key=lambda x: x['count'], reverse=True)
             
             # Add a search with tags item if tags are selected
             if extension.selected_tags:
@@ -606,6 +634,8 @@ class ItemEnterEventListener(EventListener):
             # Render the tag browser again
             tags = extension.get_tags()
             
+            # Sort tags based on user preference - not needed here as get_tags already returns sorted tags
+            
             # Adicionar o item representativo da view atual como primeiro item
             tag_items = [
                 ExtensionResultItem(
@@ -649,6 +679,17 @@ class ItemEnterEventListener(EventListener):
                     selected_tags.append(tag_item)
                 else:
                     unselected_tags.append(tag_item)
+            
+            # Sort selected and unselected tags based on user preference
+            sort_preference = extension.preferences.get('sort_tags', 'count')
+            extension.logger.info(f"Sorting selected and unselected tags by: {sort_preference}")
+            
+            if sort_preference == 'alpha':
+                selected_tags.sort(key=lambda x: x['name'].lower())
+                unselected_tags.sort(key=lambda x: x['name'].lower())
+            else:  # default: sort by count
+                selected_tags.sort(key=lambda x: x['count'], reverse=True)
+                unselected_tags.sort(key=lambda x: x['count'], reverse=True)
             
             # Exibir tags selecionadas primeiro
             for tag_item in selected_tags:

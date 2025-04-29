@@ -63,6 +63,17 @@
         {"value": "title", "text": "By title (A-Z)"}
       ]
     },
+    {
+      "id": "sort_tags",
+      "type": "select",
+      "name": "Sort Tags",
+      "description": "How to sort tags in the tag browser",
+      "default_value": "count",
+      "options": [
+        {"value": "count", "text": "By count (most used first)"},
+        {"value": "alpha", "text": "Alphabetically (A-Z)"}
+      ]
+    },
     }
   ]
 } 
