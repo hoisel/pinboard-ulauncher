@@ -37,6 +37,21 @@
         {"value": "200", "text": "200"}
       ]
     },
+    {
+      "id": "cache_time",
+      "type": "select",
+      "name": "Cache Duration",
+      "description": "How long to cache data from Pinboard (in minutes)",
+      "default_value": "5",
+      "options": [
+        {"value": "1", "text": "1 minute"},
+        {"value": "2", "text": "2 minutes"},
+        {"value": "5", "text": "5 minutes"},
+        {"value": "15", "text": "15 minutes"},
+        {"value": "30", "text": "30 minutes"},
+        {"value": "60", "text": "1 hour"}
+      ]
+    },
     }
   ]
 } 

@@ -2,6 +2,7 @@ import json
 import urllib.request
 import urllib.parse
 import urllib.error
+import logging
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 
@@ -30,6 +31,15 @@ class PinboardExtension(Extension):
         self.current_view = None  # Pode ser 'main', 'tags', 'recent', ou 'search'
         self.current_tag_filter = ""  # Armazenar o filtro de tags atual
         self.reset_query_requested = False  # Nova flag para indicar que queremos resetar a query
+        
+        # Setup logger
+        self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.INFO)
+        if not self.logger.handlers:
+            handler = logging.StreamHandler()
+            formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+            handler.setFormatter(formatter)
+            self.logger.addHandler(handler)
 
     def get_token(self):
         return self.preferences.get('pinboard_token', '')
@@ -39,15 +49,19 @@ class PinboardExtension(Extension):
         if not self.get_token():
             return []
             
-        # Use cache if available and less than 5 minutes old
+        # Use cache if available and not expired
         cache_key = f'bookmarks_{tag}'
         current_time = datetime.now()
+        cache_time_minutes = int(self.preferences.get('cache_time', '5'))
+        cache_time_seconds = cache_time_minutes * 60
+        
         if (self.last_cache_time and 
-            (current_time - self.last_cache_time).total_seconds() < 300 and
+            (current_time - self.last_cache_time).total_seconds() < cache_time_seconds and
             cache_key in self.cache):
             return self.cache[cache_key]
             
         # Not in cache, fetch from API
+        self.logger.info(f"Cache miss for bookmarks, tag: {tag or 'all'}")
         url = f'https://api.pinboard.in/v1/posts/all?auth_token={self.get_token()}&format=json'
         if tag:
             url += f'&tag={urllib.parse.quote(tag)}'
@@ -68,15 +82,19 @@ class PinboardExtension(Extension):
         if not self.get_token():
             return []
             
-        # Use cache if available and less than 5 minutes old
+        # Use cache if available and not expired
         cache_key = 'recent_bookmarks'
         current_time = datetime.now()
+        cache_time_minutes = int(self.preferences.get('cache_time', '5'))
+        cache_time_seconds = cache_time_minutes * 60
+        
         if (self.last_cache_time and 
-            (current_time - self.last_cache_time).total_seconds() < 300 and
+            (current_time - self.last_cache_time).total_seconds() < cache_time_seconds and
             cache_key in self.cache):
             return self.cache[cache_key]
             
         # Not in cache, fetch from API
+        self.logger.info(f"Cache miss for recent bookmarks, count: {count}")
         url = f'https://api.pinboard.in/v1/posts/recent?auth_token={self.get_token()}&format=json&count={count}'
             
         try:
@@ -96,15 +114,19 @@ class PinboardExtension(Extension):
         if not self.get_token():
             return []
             
-        # Use cache if available and less than 5 minutes old
+        # Use cache if available and not expired
         cache_key = 'tags'
         current_time = datetime.now()
+        cache_time_minutes = int(self.preferences.get('cache_time', '5'))
+        cache_time_seconds = cache_time_minutes * 60
+        
         if (self.last_cache_time and 
-            (current_time - self.last_cache_time).total_seconds() < 300 and
+            (current_time - self.last_cache_time).total_seconds() < cache_time_seconds and
             cache_key in self.cache):
             return self.cache[cache_key]
             
         # Not in cache, fetch from API
+        self.logger.info("Cache miss for tags")
         url = f'https://api.pinboard.in/v1/tags/get?auth_token={self.get_token()}&format=json'
             
         try:
@@ -135,6 +157,7 @@ class PinboardExtension(Extension):
             'shared': 'no'
         }
 
+        self.logger.info(f"Adding bookmark: {title} ({url})")
         query_string = urllib.parse.urlencode(params)
         api_url = f'https://api.pinboard.in/v1/posts/add?{query_string}'
 
