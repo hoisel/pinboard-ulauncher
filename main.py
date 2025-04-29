@@ -154,7 +154,7 @@ class KeywordQueryEventListener(EventListener):
         if not extension.get_token():
             return RenderResultListAction([
                 ExtensionResultItem(
-                    icon='images/icon.png',
+                    icon='images/pinboard.png',
                     name='Pinboard API Token Required',
                     description='Please set your Pinboard API token in the extension preferences',
                     on_enter=HideWindowAction()
@@ -171,7 +171,7 @@ class KeywordQueryEventListener(EventListener):
                 search_description = f"Search bookmarks with tags: {', '.join(extension.selected_tags)}"
             
             items.append(ExtensionResultItem(
-                icon='images/icon.png',
+                icon='images/search.png',
                 name='Search Bookmarks',
                 description=search_description,
                 on_enter=ExtensionCustomAction({
@@ -192,7 +192,7 @@ class KeywordQueryEventListener(EventListener):
             
             # Browse recent bookmarks item
             items.append(ExtensionResultItem(
-                icon='images/icon.png',
+                icon='images/clock.png',
                 name='Browse Recent Bookmarks',
                 description='View your most recent Pinboard bookmarks',
                 on_enter=ExtensionCustomAction({
@@ -202,7 +202,7 @@ class KeywordQueryEventListener(EventListener):
             
             # Add new bookmark item
             items.append(ExtensionResultItem(
-                icon='images/icon.png',
+                icon='images/plus.png',
                 name='Add New Bookmark',
                 description='Save current URL to Pinboard',
                 on_enter=ExtensionCustomAction({
@@ -238,7 +238,7 @@ class KeywordQueryEventListener(EventListener):
                 
                 items.append(ExtensionResultItem(
                     icon='images/tag_selected.png' if is_selected else 'images/tag.png',
-                    name=f"{'✓ ' if is_selected else ''}{tag['name']}",
+                    name=f"{tag['name']}",
                     description=f"{tag['count']} bookmarks",
                     on_enter=ExtensionCustomAction(action_data, keep_app_open=True)
                 ))
@@ -261,8 +261,8 @@ class KeywordQueryEventListener(EventListener):
             
             # Add a back to menu item at the start
             items.insert(0, ExtensionResultItem(
-                icon='images/icon.png',
-                name='← Back to Menu',
+                icon='images/back.png',
+                name='Back to Menu',
                 description='Return to the main menu',
                 on_enter=SetUserQueryAction(extension.preferences['pinboard_kw'])
             ))
@@ -284,7 +284,7 @@ class KeywordQueryEventListener(EventListener):
             # Create result items
             for bookmark in filtered_bookmarks:
                 items.append(ExtensionResultItem(
-                    icon='images/icon.png',
+                    icon='images/pinboard.png',
                     name=bookmark.get('description', 'No title'),
                     description=bookmark.get('href', 'No URL'),
                     on_enter=OpenUrlAction(bookmark.get('href', ''))
@@ -294,7 +294,7 @@ class KeywordQueryEventListener(EventListener):
                 # Check if there was an error
                 if extension.error_message:
                     error_item = ExtensionResultItem(
-                        icon='images/icon.png',
+                        icon='images/pinboard.png',
                         name='Error loading recent bookmarks',
                         description=f'Error: {extension.error_message}',
                         on_enter=HideWindowAction()
@@ -302,7 +302,7 @@ class KeywordQueryEventListener(EventListener):
                     return RenderResultListAction([error_item])
                 else:
                     items.append(ExtensionResultItem(
-                        icon='images/icon.png',
+                        icon='images/pinboard.png',
                         name='No matching recent bookmarks found',
                         description='Try a different search term',
                         on_enter=HideWindowAction()
@@ -310,8 +310,8 @@ class KeywordQueryEventListener(EventListener):
             
             # Add a back to menu item at the start
             items.insert(0, ExtensionResultItem(
-                icon='images/icon.png',
-                name='← Back to Menu',
+                icon='images/back.png',
+                name='Back to Menu',
                 description='Return to the main menu',
                 on_enter=SetUserQueryAction(extension.preferences['pinboard_kw'])
             ))
@@ -341,7 +341,7 @@ class KeywordQueryEventListener(EventListener):
         # Create result items
         for bookmark in bookmarks:
             items.append(ExtensionResultItem(
-                icon='images/icon.png',
+                icon='images/pinboard.png',
                 name=bookmark.get('description', 'No title'),
                 description=bookmark.get('href', 'No URL'),
                 on_enter=OpenUrlAction(bookmark.get('href', ''))
@@ -351,7 +351,7 @@ class KeywordQueryEventListener(EventListener):
             # Check if there was an error
             if extension.error_message:
                 error_item = ExtensionResultItem(
-                    icon='images/icon.png',
+                    icon='images/pinboard.png',
                     name='Error loading bookmarks',
                     description=f'Error: {extension.error_message}',
                     on_enter=HideWindowAction()
@@ -359,7 +359,7 @@ class KeywordQueryEventListener(EventListener):
                 return RenderResultListAction([error_item])
             else:
                 items.append(ExtensionResultItem(
-                    icon='images/icon.png',
+                    icon='images/pinboard.png',
                     name='No matching bookmarks found',
                     description='Try a different search term',
                     on_enter=HideWindowAction()
@@ -376,8 +376,8 @@ class ItemEnterEventListener(EventListener):
 
         # Add a back to menu item at the end
         items.append(ExtensionResultItem(
-            icon='images/icon.png',
-            name='← Back to Menu',
+            icon='images/back.png',
+            name='Back to Menu',
             description='Return to the main menu',
             on_enter=SetUserQueryAction(extension.preferences['pinboard_kw'])
         ))
@@ -403,7 +403,7 @@ class ItemEnterEventListener(EventListener):
                 # Show error
                 return RenderResultListAction([
                     ExtensionResultItem(
-                        icon='images/icon.png',
+                        icon='images/pinboard.png',
                         name='Error loading recent bookmarks',
                         description=f'Error: {extension.error_message}',
                         on_enter=HideWindowAction()
@@ -413,7 +413,7 @@ class ItemEnterEventListener(EventListener):
             # Create result items for recent bookmarks
             for bookmark in recent_bookmarks:
                 items.append(ExtensionResultItem(
-                    icon='images/icon.png',
+                    icon='images/pinboard.png',
                     name=bookmark.get('description', 'No title'),
                     description=bookmark.get('href', 'No URL'),
                     on_enter=OpenUrlAction(bookmark.get('href', ''))
@@ -421,7 +421,7 @@ class ItemEnterEventListener(EventListener):
             
             if not items:
                 items.append(ExtensionResultItem(
-                    icon='images/icon.png',
+                    icon='images/pinboard.png',
                     name='No recent bookmarks found',
                     description='Try again later or add some bookmarks',
                     on_enter=HideWindowAction()
@@ -473,7 +473,7 @@ class ItemEnterEventListener(EventListener):
                 
                 tag_items.append(ExtensionResultItem(
                     icon='images/tag_selected.png' if is_selected else 'images/tag.png',
-                    name=f"{'✓ ' if is_selected else ''}{tag_item['name']}",
+                    name=f"{tag_item['name']}",
                     description=f"{tag_item['count']} bookmarks",
                     on_enter=ExtensionCustomAction(action_data, keep_app_open=True)
                 ))
@@ -488,8 +488,8 @@ class ItemEnterEventListener(EventListener):
             
             # Add a back to menu item
             tag_items.append(ExtensionResultItem(
-                icon='images/icon.png',
-                name='← Back to Menu',
+                icon='images/back.png',
+                name='Back to Menu',
                 description='Return to the main menu',
                 on_enter=SetUserQueryAction(extension.preferences['pinboard_kw'])
             ))
@@ -497,7 +497,7 @@ class ItemEnterEventListener(EventListener):
             # Add a search with tags item if tags are selected
             if extension.selected_tags:
                 tag_items.append(ExtensionResultItem(
-                    icon='images/icon.png',
+                    icon='images/pinboard.png',
                     name='Search with Selected Tags',
                     description=f"Search bookmarks with tags: {', '.join(extension.selected_tags)}",
                     on_enter=ExtensionCustomAction({
@@ -512,7 +512,7 @@ class ItemEnterEventListener(EventListener):
             # This would normally connect to the active browser to get URL
             # For this example, we'll just show a placeholder
             items.append(ExtensionResultItem(
-                icon='images/icon.png',
+                icon='images/pinboard.png',
                 name='Add bookmark feature',
                 description='This would add the current browser URL to Pinboard',
                 on_enter=HideWindowAction()

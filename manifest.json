@@ -2,8 +2,8 @@
   "required_api_version": "2",
   "name": "Pinboard",
   "description": "Manage and search your Pinboard.in bookmarks",
-  "developer_name": "Claude",
-  "icon": "images/icon.png",
+  "developer_name": "Daniel Hoisel",
+  "icon": "images/pinboard-logo.png",
   "options": {
     "query_debounce": 0.5
   },
