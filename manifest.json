@@ -52,6 +52,17 @@
         {"value": "60", "text": "1 hour"}
       ]
     },
+    {
+      "id": "sort_bookmarks",
+      "type": "select",
+      "name": "Sort Bookmarks",
+      "description": "How to sort bookmarks in search results",
+      "default_value": "time",
+      "options": [
+        {"value": "time", "text": "Most recent first"},
+        {"value": "title", "text": "By title (A-Z)"}
+      ]
+    },
     }
   ]
 } 

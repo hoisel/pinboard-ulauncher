@@ -366,6 +366,15 @@ class KeywordQueryEventListener(EventListener):
                         query.lower() in b.get('extended', '').lower() or
                         query.lower() in b.get('href', '').lower()]
             
+            # Sort bookmarks based on user preference
+            sort_preference = extension.preferences.get('sort_bookmarks', 'time')
+            extension.logger.info(f"Sorting filtered recent bookmarks by: {sort_preference}")
+            
+            if sort_preference == 'title':
+                filtered_bookmarks.sort(key=lambda x: x.get('description', '').lower())
+            else:  # default: sort by time
+                filtered_bookmarks.sort(key=lambda x: x.get('time', ''), reverse=True)
+            
             # Create result items
             for bookmark in filtered_bookmarks:
                 items.append(ExtensionResultItem(
@@ -452,6 +461,15 @@ class KeywordQueryEventListener(EventListener):
                         query.lower() in b.get('description', '').lower() or
                         query.lower() in b.get('extended', '').lower() or
                         query.lower() in b.get('href', '').lower()]
+        
+        # Sort bookmarks based on user preference
+        sort_preference = extension.preferences.get('sort_bookmarks', 'time')
+        extension.logger.info(f"Sorting bookmarks by: {sort_preference}")
+        
+        if sort_preference == 'title':
+            bookmarks.sort(key=lambda x: x.get('description', '').lower())
+        else:  # default: sort by time
+            bookmarks.sort(key=lambda x: x.get('time', ''), reverse=True)
         
         # Create result items
         for bookmark in bookmarks:
@@ -541,6 +559,15 @@ class ItemEnterEventListener(EventListener):
                     on_enter=HideWindowAction()
                 ))
                 return RenderResultListAction(items)
+            
+            # Sort bookmarks based on user preference
+            sort_preference = extension.preferences.get('sort_bookmarks', 'time')
+            extension.logger.info(f"Sorting recent bookmarks by: {sort_preference}")
+            
+            if sort_preference == 'title':
+                recent_bookmarks.sort(key=lambda x: x.get('description', '').lower())
+            else:  # default: sort by time
+                recent_bookmarks.sort(key=lambda x: x.get('time', ''), reverse=True)
             
             # Create result items for recent bookmarks
             for bookmark in recent_bookmarks:
