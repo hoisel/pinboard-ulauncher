@@ -283,7 +283,7 @@ class KeywordQueryEventListener(EventListener):
                 items.append(ExtensionResultItem(
                     icon='images/tag_selected.png',
                     name=f"{tag['name']}",
-                    description=f"{tag['count']} bookmarks",
+                    description=f"{tag['count']} bookmarks (Click to deselect)",
                     on_enter=ExtensionCustomAction(action_data, keep_app_open=True)
                 ))
             
@@ -302,7 +302,7 @@ class KeywordQueryEventListener(EventListener):
                 items.append(ExtensionResultItem(
                     icon='images/tag.png',
                     name=f"{tag['name']}",
-                    description=f"{tag['count']} bookmarks",
+                    description=f"{tag['count']} bookmarks (Click to select)",
                     on_enter=ExtensionCustomAction(action_data, keep_app_open=True)
                 ))
             
@@ -599,7 +599,7 @@ class ItemEnterEventListener(EventListener):
                 tag_items.append(ExtensionResultItem(
                     icon='images/tag_selected.png',
                     name=f"{tag_item['name']}",
-                    description=f"{tag_item['count']} bookmarks",
+                    description=f"{tag_item['count']} bookmarks (Click to deselect)",
                     on_enter=ExtensionCustomAction(action_data, keep_app_open=True)
                 ))
             
@@ -617,7 +617,7 @@ class ItemEnterEventListener(EventListener):
                 tag_items.append(ExtensionResultItem(
                     icon='images/tag.png',
                     name=f"{tag_item['name']}",
-                    description=f"{tag_item['count']} bookmarks",
+                    description=f"{tag_item['count']} bookmarks (Click to select)",
                     on_enter=ExtensionCustomAction(action_data, keep_app_open=True)
                 ))
             
