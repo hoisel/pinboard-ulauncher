@@ -183,6 +183,18 @@ class KeywordQueryEventListener(EventListener):
                     'tags': extension.selected_tags
                 }, keep_app_open=True)
             ))
+
+                     # Clear selected tags item (se houver tags selecionadas)
+            if extension.selected_tags:
+                items.append(ExtensionResultItem(
+                    icon='images/clear.png',
+                    name='Clear Selected Tags',
+                    description=f"Currently selected: {', '.join(extension.selected_tags)}",
+                    on_enter=ExtensionCustomAction({
+                        'action': 'clear_tags'
+                    }, keep_app_open=True)
+                ))
+            
             
             # Browse tags item
             items.append(ExtensionResultItem(
@@ -213,7 +225,7 @@ class KeywordQueryEventListener(EventListener):
                     'action': 'add_bookmark'
                 }, keep_app_open=True)
             ))
-            
+   
             return RenderResultListAction(items)
         
         # Handle tag browsing with # prefix
@@ -269,6 +281,16 @@ class KeywordQueryEventListener(EventListener):
                     on_enter=ExtensionCustomAction({
                         'action': 'search_bookmarks',
                         'tags': extension.selected_tags
+                    }, keep_app_open=True)
+                ))
+                
+                # Adicionar opção para limpar todas as tags selecionadas
+                items.insert(2, ExtensionResultItem(
+                    icon='images/clear.png',
+                    name='Clear All Selected Tags',
+                    description=f"Currently selected: {', '.join(extension.selected_tags)}",
+                    on_enter=ExtensionCustomAction({
+                        'action': 'clear_tags'
                     }, keep_app_open=True)
                 ))
             
@@ -566,6 +588,16 @@ class ItemEnterEventListener(EventListener):
                         'tags': extension.selected_tags
                     }, keep_app_open=True)
                 ))
+                
+                # Adicionar opção para limpar todas as tags selecionadas
+                tag_items.insert(2, ExtensionResultItem(
+                    icon='images/clear.png',
+                    name='Clear All Selected Tags',
+                    description=f"Currently selected: {', '.join(extension.selected_tags)}",
+                    on_enter=ExtensionCustomAction({
+                        'action': 'clear_tags'
+                    }, keep_app_open=True)
+                ))
             
             if not tags:
                 # No tags found or error occurred
@@ -631,6 +663,13 @@ class ItemEnterEventListener(EventListener):
             
             # O primeiro item (ícone de info) já tem a ação SetUserQueryAction para resetar a query para #
             return RenderResultListAction(tag_items)
+        
+        elif action == 'clear_tags':
+            # Limpar todas as tags selecionadas
+            extension.selected_tags = []
+            
+            # Retornar ao menu principal
+            return SetUserQueryAction(extension.preferences['pinboard_kw'])
         
         elif action == 'add_bookmark':
             # This would normally connect to the active browser to get URL
