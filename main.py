@@ -295,7 +295,8 @@ class KeywordQueryEventListener(EventListener):
             
             # Depois exibir tags não selecionadas
             # Limit the number of results
-            max_display = 50 - len(selected_tags)  # Ajustar limite considerando tags selecionadas
+            max_results = int(extension.preferences.get('max_results', '50'))
+            max_display = max_results - len(selected_tags)  # Ajustar limite considerando tags selecionadas
             count_total = len(unselected_tags)
             
             for tag in unselected_tags[:max_display]:
@@ -316,7 +317,7 @@ class KeywordQueryEventListener(EventListener):
                 items.append(ExtensionResultItem(
                     icon='images/tag.png',
                     name=f"... and {count_total - max_display} more tags",
-                    description="Type to filter results",
+                    description="Update max results to see more tags",
                     on_enter=HideWindowAction()
                 ))
             
@@ -437,6 +438,16 @@ class KeywordQueryEventListener(EventListener):
                 description=bookmark.get('href', 'No URL'),
                 on_enter=OpenUrlAction(bookmark.get('href', ''))
             ))
+            
+            # Limit number of results
+            max_results = int(extension.preferences.get('max_results', '50'))
+            if len(items) - 2 >= max_results:  # -2 para considerar os itens de cabeçalho
+                items.append(ExtensionResultItem(
+                    icon='images/info.png',
+                    name=f'...and more results',
+                    description=f'Your search returned more than {max_results} results',
+                ))
+                break
         
         if len(items) <= 2:  # Apenas os itens de view e back
             # Check if there was an error
@@ -605,7 +616,8 @@ class ItemEnterEventListener(EventListener):
                 ))
             
             # Depois exibir tags não selecionadas
-            max_display = 50 - len(selected_tags)  # Ajustar limite considerando tags selecionadas
+            max_results = int(extension.preferences.get('max_results', '50'))
+            max_display = max_results - len(selected_tags)  # Ajustar limite considerando tags selecionadas
             count_total = len(unselected_tags)
             
             for tag_item in unselected_tags[:max_display]:
@@ -626,7 +638,7 @@ class ItemEnterEventListener(EventListener):
                 tag_items.append(ExtensionResultItem(
                     icon='images/tag.png',
                     name=f"... and {count_total - max_display} more tags",
-                    description="Type to filter results",
+                    description="Update max results to see more tags",
                     on_enter=HideWindowAction()
                 ))
             
@@ -655,7 +667,8 @@ class ItemEnterEventListener(EventListener):
                 ]
                 
                 # Exibir todas as tags
-                max_display = 50
+                max_results = int(extension.preferences.get('max_results', '50'))
+                max_display = max_results
                 count_total = len(tags)
                 
                 for tag_item in tags[:max_display]:
@@ -676,7 +689,7 @@ class ItemEnterEventListener(EventListener):
                     tag_items.append(ExtensionResultItem(
                         icon='images/tag.png',
                         name=f"... and {count_total - max_display} more tags",
-                        description="Type to filter results",
+                        description="Update max results to see more tags",
                         on_enter=HideWindowAction()
                     ))
                 

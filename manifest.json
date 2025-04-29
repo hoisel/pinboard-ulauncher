@@ -21,6 +21,22 @@
       "name": "Pinboard Token",
       "description": "Your Pinboard API token (username:token)",
       "default_value": ""
+    },
+    {
+      "id": "max_results",
+      "type": "select",
+      "name": "Maximum Results",
+      "description": "Maximum number of results to display",
+      "default_value": "50",
+      "options": [
+        {"value": "5", "text": "5"},
+        {"value": "10", "text": "10"},
+        {"value": "20", "text": "20"},
+        {"value": "50", "text": "50"},
+        {"value": "100", "text": "100"},
+        {"value": "200", "text": "200"}
+      ]
+    },
     }
   ]
 } 
